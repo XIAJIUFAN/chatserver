@@ -20,10 +20,12 @@ enum EnMsgType
 };
 
 #endif
-// {"msgid":1, "id":3, "password":" 123456"}
+// {"msgid":1, "id":6, "password":"123456"}
 // {"msgid":1, "id":5, "password":" qwerty"}
 // {"msgid":5, "id":4, "from":"hhh", "to":5, "msg":"hhh hello!"}
 // {"msgid":5, "id":5, "from":"jjj", "to":4, "msg":"ok!"}
 // {"msgid":5, "id":4, "from":"hhh", "to":5, "msg":"hello!"}
 
 //{"msgid":6, "id":3, "friendid":4}
+
+//{"msgid":4, "name":"dear", "password":"123456"}

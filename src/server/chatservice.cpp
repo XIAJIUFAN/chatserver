@@ -77,7 +77,7 @@ void ChatService::login(const TcpConnectionPtr& conn, json& js, Timestamp time)
             json response;
             response["msgid"] = LOGIN_MSG_ACK;
             response["errno"] = 2;
-            response["errmsg"] = "该账号已经登录，请重新输入新账号!";
+            response["errmsg"] = "this account is using, input another!";
             conn->send(response.dump());
 
         } 
@@ -125,9 +125,40 @@ void ChatService::login(const TcpConnectionPtr& conn, json& js, Timestamp time)
                     js["name"] = user.getName();
                     js["state"] = user.getState();
 
-                    vec2.push_back(js.dump());
+                    vec2.push_back(js.dump()); // vector<string>
                 }
                 response["friends"] = vec2;
+            }
+
+            // 查询该用户所在的群组信息并返回
+            vector<Group> groupVec = groupModel_.queryGroups(id);
+            if (!groupVec.empty()) 
+            {
+                vector<string> vec3;
+                for (auto& group: groupVec)
+                {
+                    json groupjs;
+                    groupjs["id"] = group.getId(); // groupid
+                    groupjs["groupname"] = group.getName(); // groupname
+                    groupjs["groupdesc"] = group.getDesc();
+
+                    vector<string> vec4;
+                    for (auto& groupUser : group.getUsers()) 
+                    {
+                        json js;
+                        js["id"] = groupUser.getId(); // userid
+                        js["name"] = groupUser.getName(); // username
+                        js["state"] = groupUser.getState(); // state
+                        js["role"] = groupUser.getRole();
+                        
+                        vec4.push_back(js.dump());
+                    }
+
+                    groupjs["users"] = vec4;
+
+                    vec3.push_back(groupjs.dump());
+                }
+                response["groups"] = vec3;
             }
             
 
@@ -140,7 +171,7 @@ void ChatService::login(const TcpConnectionPtr& conn, json& js, Timestamp time)
         json response;
         response["msgid"] = LOGIN_MSG_ACK;
         response["errno"] = 1;
-        response["errmsg"] = "用户不存在，登录失败!";
+        response["errmsg"] = "id or password is invalid!";
         conn->send(response.dump());
     }
 }
@@ -249,7 +280,7 @@ void ChatService::oneChat(const TcpConnectionPtr& conn, json& js, Timestamp time
         }
     }
 
-    // 查询toid是否在线
+    // 查询toid是否在线(可能不再一台服务器上)
     User user = userModel_.query(toid);
     if (user.getState() == "online") 
     {
@@ -271,6 +302,8 @@ void ChatService::addFriend(const TcpConnectionPtr& conn, json& js, Timestamp ti
 
     // 存储好友信息
     friendModel_.insert(userid, friendid);
+
+    // 这些业务当然都可以添加响应信息，这个完全自定义的
 }
 
 // 创建群组业务
@@ -316,7 +349,7 @@ void ChatService::groupChat(const TcpConnectionPtr& conn, json& js, Timestamp ti
         }
         else 
         {
-            // 查询id是否在线
+            // // 查询id是否在线
             User user = userModel_.query(id);
             if (user.getState() == "online")
             {// id在其他服务上登录

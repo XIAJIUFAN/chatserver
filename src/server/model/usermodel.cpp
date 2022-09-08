@@ -9,7 +9,7 @@ bool UserModel::insert(User& user)
 {
     // 组装sql语句
     char sql[1024] = { 0 };
-    sprintf(sql, "insert into User(name, password, state) values('%s',' %s', '%s')",
+    sprintf(sql, "insert into User(name, password, state) values('%s','%s', '%s')",
             user.getName().c_str(), user.getPwd().c_str(), user.getState().c_str());
     
     MySQL mysql;
